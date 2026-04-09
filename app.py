@@ -6,7 +6,12 @@ import json
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
+try:
+    import plotly.express as px
+    import plotly.graph_objects as go
+    PLOTLY_AVAILABLE = True
+except ModuleNotFoundError:
+    PLOTLY_AVAILABLE = False
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn.ensemble import HistGradientBoostingClassifier
@@ -239,6 +244,9 @@ def build_input_row(feature_cols: list[str], state: str, use_exact_coords: bool,
 
 
 def build_state_map(state_df: pd.DataFrame, selected_state: str):
+    if not PLOTLY_AVAILABLE:
+        return None
+
     fig = px.choropleth(
         state_df,
         locations="abbr",
@@ -261,6 +269,7 @@ def build_state_map(state_df: pd.DataFrame, selected_state: str):
             "n": "Samples",
         },
     )
+
     sel = state_df.loc[state_df["state"] == selected_state]
     if not sel.empty:
         fig.add_scattergeo(
@@ -271,7 +280,11 @@ def build_state_map(state_df: pd.DataFrame, selected_state: str):
             name="Selected state",
             hoverinfo="skip",
         )
-    fig.update_layout(margin=dict(l=0, r=0, t=25, b=0), coloraxis_colorbar_title="Prevalence")
+
+    fig.update_layout(
+        margin=dict(l=0, r=0, t=25, b=0),
+        coloraxis_colorbar_title="Prevalence"
+    )
     return fig
 
 
